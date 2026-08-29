@@ -1,7 +1,56 @@
 /* Plan de 12 semanas. Los juegos se describen de forma declarativa para que la
    interfaz pueda presentar el mismo contenido en escritorio, móvil e impresión. */
 (() => {
-  const A = (title, minutes, phase, setup, how, cues, material, objective, easier, harder, watchFor, diagram = 'free') => ({
+  const sentenceSteps = (text) => (text.match(/[^.!?]+[.!?]?/g) || [text])
+    .map(sentence => sentence.trim())
+    .filter(Boolean)
+
+  const rotationGuide = (activity) => {
+    const context = `${activity.title} ${activity.setup} ${activity.how}`.toLowerCase()
+    if (activity.phase === 'Bienvenida activa') return 'Todos participan a la vez. Entre rondas, cambia la dirección de desplazamiento o el punto de inicio; si trabajan por parejas, conserva la pareja y alterna únicamente quién propone la acción.'
+    if (/1v1|duelo|pareja|parejas/.test(context)) return 'Cambia atacante y defensor después de cada acción. Tras dos repeticiones, cambia también de pareja o de pasillo para ofrecer un problema nuevo.'
+    if (/2v1|dos contra uno|tríos|trio/.test(context)) return 'Mantén grupos de tres: cada niño realiza dos acciones en cada rol antes de rotar. Evita que el mismo jugador defienda siempre.'
+    if (/2v2|3v3|4v4|partido|equipos/.test(context)) return 'Juega series de 3–4 minutos. Entre series, cambia rivales, sentido de ataque o comodín y deja 30–40 segundos para beber y responder una pregunta.'
+    if (/estaciones|circuito|festival/.test(context)) return 'Organiza una rotación visible y siempre en el mismo sentido. Cambia de estación cada 3–4 minutos, antes de que baje la atención.'
+    if (/rondo|comodín/.test(context)) return 'Rota el rol interior o de comodín por tiempo, no solo cuando hay error, para que todos vivan todas las funciones.'
+    return 'Mantén a todos activos y cambia punto de inicio, dirección o compañero cada 2–3 minutos para evitar esperas y repeticiones mecánicas.'
+  }
+
+  const restartGuide = (activity) => {
+    const context = `${activity.phase} ${activity.title} ${activity.how}`.toLowerCase()
+    if (/partido|3v3|2v2|4v4/.test(context)) return 'Coloca 4–6 balones junto al entrenador o detrás de las metas. Si el balón sale, introduce otro en menos de 8 segundos sin corregir durante la acción.'
+    if (/1v1|duelo|pasillo/.test(context)) return 'Limita cada acción a 15–20 segundos. Si no hay solución, termina con una señal clara, devuelve un balón nuevo y cambia los roles.'
+    if (/2v1|dos contra uno|ola/.test(context)) return 'Deja un balón preparado en cada salida. La siguiente acción comienza cuando los tres jugadores anteriores han abandonado el espacio por fuera.'
+    return 'Reinicia con una señal breve y un balón preparado. Las explicaciones van entre rondas y no deben superar 20–30 segundos.'
+  }
+
+  const safetyGuide = (activity) => {
+    const context = `${activity.title} ${activity.setup} ${activity.how} ${activity.material}`.toLowerCase()
+    if (/1v1|duelo|roba|defensor|guardián/.test(context)) return 'Prohíbe entradas al suelo, cargas y tirones. Empareja por confianza y detén la tarea si el contacto deja de ser controlado.'
+    if (/portería|porterías|meta|remate|tiro/.test(context)) return 'Marca una entrada y una salida diferentes, deja espacio detrás de las metas y recoge balones siempre por fuera del campo.'
+    if (/pica|puerta móvil/.test(context)) return 'Usa picas blandas o conos planos y evita que ningún niño corra sosteniendo material rígido cerca de la cara.'
+    return 'Comprueba que las zonas no se cruzan, retira material suelto y aprovecha una pausa entre rondas para ofrecer agua sin cortar una acción.'
+  }
+
+  const enrichActivity = (activity) => {
+    const phaseStart = {
+      'Bienvenida activa': 'Presenta la historia y demuestra una sola acción durante 20–30 segundos. Después, todos empiezan a la vez con su balón.',
+      Exploración: 'Muestra los límites del espacio y deja una primera ronda libre para que los niños descubran soluciones antes de añadir consignas.',
+      'Reto guiado': 'Demuestra quién inicia, dónde termina la acción y cómo se puntúa. Haz una repetición de prueba a velocidad baja.',
+      'Partido libre': 'Aclara únicamente dirección de ataque, reinicio y normas de seguridad. Deja jugar la primera serie sin interrupciones.',
+    }[activity.phase] || 'Muestra el espacio, el inicio y el final de la acción con una demostración breve.'
+
+    return {
+      ...activity,
+      steps: [phaseStart, ...sentenceSteps(activity.how), rotationGuide(activity)],
+      restart: restartGuide(activity),
+      safety: safetyGuide(activity),
+      coachIntervention: `Observa primero durante 60–90 segundos. Después usa una sola consigna (${activity.cues[0].toLowerCase()}) y vuelve a dejar jugar. Evita dar la solución antes de que el niño perciba el problema.`,
+      success: `Señal de progreso: ${activity.watchFor} Observa las dos últimas rondas y anota si lo muestra la mayoría, solo algunos o todavía necesita ayuda.`,
+    }
+  }
+
+  const A = (title, minutes, phase, setup, how, cues, material, objective, easier, harder, watchFor, diagram = 'free') => enrichActivity({
     title, minutes, phase, setup, how, cues, material, objective, easier, harder, watchFor, diagram,
   })
 
