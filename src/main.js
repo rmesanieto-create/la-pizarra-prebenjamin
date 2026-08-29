@@ -221,6 +221,42 @@
     ? window.renderPitchDiagram(activity)
     : `<div class="diagram-fallback">Montaje: ${escapeHTML(activity.setup)}</div>`
 
+  const exampleWithTwelve = (activity) => {
+    const context = `${activity.title} ${activity.setup} ${activity.how}`.toLowerCase()
+    if (activity.phase === 'Bienvenida activa') return 'Los 12 dentro del mismo espacio, cada uno con su balón. Nadie espera y nadie queda eliminado.'
+    if (/4 islas|cuatro islas/.test(context)) return 'Haz 4 grupos de 3. Cada grupo empieza dentro de una isla distinta; cuando des la señal, todos cambian de isla con su balón.'
+    if (/3v3/.test(context)) return 'Monta 2 campos iguales. En cada campo juegan 3 contra 3: participan los 12 a la vez.'
+    if (/2v2/.test(context)) return 'Monta 3 campos pequeños. En cada campo juegan 2 contra 2: participan los 12 a la vez.'
+    if (/4v4/.test(context)) return 'Haz 3 equipos de 4. Juegan dos equipos y el tercero descansa, recoge balones y entra en la siguiente serie.'
+    if (/2v1|dos contra uno/.test(context)) return 'Haz 4 tríos. En cada trío hay 2 atacantes y 1 defensor; cambian los papeles después de dos intentos.'
+    if (/tríos|trio|grupos de tres/.test(context)) return 'Haz 4 grupos de 3 y copia el mismo montaje cuatro veces. Cada grupo trabaja en su zona para evitar colas.'
+    if (/1v1|duelo|pareja|parejas/.test(context)) return 'Haz 6 parejas y prepara 6 salidas iguales. Cada pareja trabaja en su propio pasillo o puerta.'
+    if (/rondo|cuadrado.*4|grupos de 4|grupos de cuatro|cuarteto/.test(context)) return 'Haz 3 grupos de 4. Cada grupo usa su propio cuadrado para que nadie espere.'
+    if (/estaciones|circuito|festival/.test(context)) return 'Haz 3 grupos de 4. Cada grupo empieza en una estación distinta y rota siempre en el mismo sentido.'
+    return 'Empiezan los 12 a la vez. Si el espacio se llena, copia el mismo montaje dos veces y coloca 6 niños en cada zona.'
+  }
+
+  const easyGuide = (activity) => {
+    const actionSteps = activity.steps || [activity.how]
+    const firstAction = activity.phase === 'Bienvenida activa'
+      ? (actionSteps[2] || actionSteps[1] || activity.how)
+      : (actionSteps[1] || actionSteps[0] || activity.how)
+    return `
+      <section class="first-day-guide" aria-label="Explicación fácil para el entrenador">
+        <div class="first-day-heading">
+          <span>Modo primer día</span>
+          <div><h3>Hazlo así, sin complicarte</h3><p>Lee solo estas cuatro tarjetas antes de empezar. El resto de la ficha es para consultar después.</p></div>
+        </div>
+        <ol class="first-day-steps">
+          <li><b>Reparte a los 12</b><p>${escapeHTML(exampleWithTwelve(activity))}</p></li>
+          <li><b>Colócalos</b><p>${escapeHTML(activity.setup)}</p></li>
+          <li><b>Di esto y empieza</b><p>«Este juego se llama ${escapeHTML(activity.title)}. Mirad una vez. Cuando diga “ya”, empezáis; cuando diga “cambio”, paráis el balón y me miráis».</p><small><b>Enséñales solo esto:</b> ${escapeHTML(firstAction)}</small></li>
+          <li><b>Para y cambia</b><p>${escapeHTML(activity.restart || 'Para con una señal, prepara otro balón y cambia los papeles.')}</p></li>
+        </ol>
+        <div class="first-day-rescue"><b>Si se lían, no expliques más:</b> ${escapeHTML(activity.easier)} Luego vuelve a probar la versión normal.</div>
+      </section>`
+  }
+
   const activityDetail = (activity, index, isDone) => `
     <article class="activity-expanded">
       <div class="activity-visual">
@@ -236,6 +272,7 @@
         <p>La posición inicial y los recorridos corresponden a esta tarea. Ajusta solo las distancias al número y nivel del grupo.</p>
       </div>
       <div class="activity-info">
+        ${easyGuide(activity)}
         <dl class="activity-guide">
           <div><dt>Tiempo</dt><dd>${activity.minutes} min</dd></div>
           <div class="guide-highlight"><dt>Montaje exacto</dt><dd>${escapeHTML(activity.setup)}</dd></div>
