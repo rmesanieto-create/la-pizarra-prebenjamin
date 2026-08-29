@@ -217,42 +217,35 @@
       </div>`
   }
 
-  const pitchDiagram = (type) => {
-    const special = {
-      islands: '<circle cx="72" cy="78" r="30"/><circle cx="188" cy="78" r="30"/><circle cx="72" cy="172" r="30"/><circle cx="188" cy="172" r="30"/>',
-      'four-goals': '<path d="M35 45h-20v35M225 45h20v35M35 205h-20v-35M225 205h20v-35"/>',
-      lanes: '<path d="M95 25v200M165 25v200"/>',
-      'two-v-one': '<path d="M45 125h170"/><path d="m205 116 10 9-10 9"/>',
-      gates: '<path d="M65 70h28M167 70h28M65 180h28M167 180h28"/>',
-      triangle: '<path d="m130 55-65 130h130z"/>',
-      zones: '<rect x="48" y="52" width="45" height="35"/><rect x="167" y="52" width="45" height="35"/><rect x="48" y="163" width="45" height="35"/><rect x="167" y="163" width="45" height="35"/>',
-    }
-    return `
-      <svg class="pitch-diagram diagram-${escapeHTML(type)}" viewBox="0 0 260 250" role="img" aria-label="Esquema orientativo de organización">
-        <rect x="12" y="12" width="236" height="226" rx="4" class="pitch-border"/>
-        <path d="M130 12v226" class="pitch-line"/><circle cx="130" cy="125" r="24" class="pitch-line"/>
-        <g class="pitch-special">${special[type] || '<path d="M52 62c42 10 46 44 78 63s58 13 82 58"/><path d="m201 174 11 9-14 5"/>'}</g>
-        <g class="cones"><path d="m47 45-6 16h12z"/><path d="m213 45-6 16h12z"/><path d="m47 205-6-16h12z"/><path d="m213 205-6-16h12z"/></g>
-        <g class="players"><circle cx="78" cy="112" r="8"/><circle cx="105" cy="165" r="8"/><circle cx="182" cy="138" r="8"/></g>
-        <g class="opponents"><circle cx="150" cy="82" r="8"/><circle cx="158" cy="180" r="8"/></g>
-        <circle class="ball-dot" cx="91" cy="118" r="4"/>
-      </svg>`
-  }
+  const pitchDiagram = (activity) => window.renderPitchDiagram
+    ? window.renderPitchDiagram(activity)
+    : `<div class="diagram-fallback">Montaje: ${escapeHTML(activity.setup)}</div>`
 
   const activityDetail = (activity, index, isDone) => `
     <article class="activity-expanded">
       <div class="activity-visual">
-        ${pitchDiagram(activity.diagram)}
-        <p>Esquema orientativo · adapta distancias al grupo</p>
+        <div class="diagram-heading"><span>Montaje representado</span><strong>${escapeHTML(activity.title)}</strong></div>
+        ${pitchDiagram(activity)}
+        <div class="diagram-legend" aria-label="Leyenda del esquema">
+          <span><i class="legend-player is-blue"></i> Equipo / atacante</span>
+          <span><i class="legend-player is-coral"></i> Rival / defensor</span>
+          <span><i class="legend-player is-neutral"></i> Comodín</span>
+          <span><i class="legend-ball"></i> Balón</span>
+          <span><i class="legend-cone"></i> Cono o puerta</span>
+        </div>
+        <p>La posición inicial y los recorridos corresponden a esta tarea. Ajusta solo las distancias al número y nivel del grupo.</p>
       </div>
       <div class="activity-info">
-        <dl>
+        <dl class="activity-guide">
           <div><dt>Tiempo</dt><dd>${activity.minutes} min</dd></div>
-          <div><dt>Organización</dt><dd>${escapeHTML(activity.setup)}</dd></div>
-          <div><dt>Cómo se juega</dt><dd>${escapeHTML(activity.how)}</dd></div>
-          <div><dt>Consignas</dt><dd><ul>${activity.cues.map(cue => `<li>${escapeHTML(cue)}</li>`).join('')}</ul></dd></div>
+          <div class="guide-highlight"><dt>Montaje exacto</dt><dd>${escapeHTML(activity.setup)}</dd></div>
+          <div class="guide-full"><dt>Desarrollo paso a paso</dt><dd><ol class="activity-steps">${(activity.steps || [activity.how]).map(step => `<li>${escapeHTML(step)}</li>`).join('')}</ol></dd></div>
+          <div><dt>Reinicio y rotación</dt><dd>${escapeHTML(activity.restart || 'Reinicia rápido y rota los roles para que todos participen.')}</dd></div>
+          <div><dt>Intervención del entrenador</dt><dd>${escapeHTML(activity.coachIntervention || activity.watchFor)}</dd></div>
+          <div><dt>Consignas breves</dt><dd><ul>${activity.cues.map(cue => `<li>${escapeHTML(cue)}</li>`).join('')}</ul></dd></div>
           <div><dt>Material</dt><dd>${escapeHTML(activity.material)}</dd></div>
-          <div><dt>Objetivo</dt><dd>${escapeHTML(activity.objective)}</dd></div>
+          <div class="guide-success"><dt>Objetivo y señal de éxito</dt><dd>${escapeHTML(activity.success || activity.objective)}</dd></div>
+          <div><dt>Seguridad</dt><dd>${escapeHTML(activity.safety || 'Mantén distancias seguras y detén cualquier contacto descontrolado.')}</dd></div>
           <div><dt>Adaptaciones</dt><dd><span><b>Más fácil:</b> ${escapeHTML(activity.easier)}</span><span><b>Más reto:</b> ${escapeHTML(activity.harder)}</span></dd></div>
           <div class="coach-watch"><dt>${icon('eye', 17)} Mira esto</dt><dd>${escapeHTML(activity.watchFor)}</dd></div>
         </dl>
